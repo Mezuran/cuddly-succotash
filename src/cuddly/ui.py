@@ -138,7 +138,7 @@ if df is not None:
     st_folium(m, use_container_width=True, height=500, returned_objects=[])
     
     if 'Kategori' in filtered.columns:
-        c1, c2 = st.columns([9, 1])
+        c1, c2 = st.columns([1, 1])
         with c1:
             chart_data = pd.crosstab(filtered['Model'], filtered['Kategori'])
             valid_cols = [c for c in ['iBox', 'Inter', 'Cukai'] if c in chart_data.columns]
@@ -150,7 +150,7 @@ if df is not None:
     else:
         st.warning("Kolom 'Kategori' tidak ditemukan dalam data.")
 
-    col_1, col_2 = st.columns([9, 1]) 
+    col_1, col_2 = st.columns([1, 1]) 
     with col_1:
         st.write('Detail Data')
         st.dataframe(
@@ -165,7 +165,7 @@ if df is not None:
             hide_index=True
         )
     with col_2:
-        st.write('Jumlah')
+        st.write('Top Provinsi')
         st.dataframe(
             map_data, 
             column_config={
