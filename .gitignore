@@ -1,0 +1,55 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Distribution / Builds ---
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# --- Virtual Environments (Crucial for Poetry) ---
+# Poetry defaults to creating .venv in the project root if configured
+.venv/
+env/
+venv/
+ENV/
+
+# --- Environment Variables (SECURITY CRITICAL) ---
+# Never commit database passwords or API keys
+.env
+.env.local
+.streamlit/
+
+# --- Testing & Code Quality ---
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# --- IDEs / Editors ---
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains (PyCharm)
+.idea/
+
+# --- Operating System Files ---
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Database (Optional but recommended) ---
+# Ignore local SQLite databases if you use them for testing
+*.sqlite3
+*.db
+# Ignore database dumps/exports to avoid bloating the repo
+*.sql
+*.dump
