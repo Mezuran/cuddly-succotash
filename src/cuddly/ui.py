@@ -65,7 +65,7 @@ def load_data() -> Optional[pd.DataFrame]:
     result = []
 
     for i in ecommerce:
-        file_path = Path(f"./data/iphone_{i}.csv") 
+        file_path = Path(f"data/iphone_{i}.csv") 
         if not file_path.exists():
             file_path = Path(f"iphone_{i}.csv")
             
