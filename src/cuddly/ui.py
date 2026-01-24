@@ -85,7 +85,7 @@ def load_data() -> Optional[pd.DataFrame]:
 
 df = load_data()
 
-st.set_page_config(layout="wide", page_title="PDS: Tugas Besar")
+st.set_page_config(layout="centered", page_title="PDS: Tugas Besar")
 
 col_hero_1, col_hero_2 = st.columns([2, 1]) 
 
@@ -138,7 +138,7 @@ if df is not None:
     st_folium(m, use_container_width=True, height=500, returned_objects=[])
     
     if 'Kategori' in filtered.columns:
-        c1, c2 = st.columns([1, 1])
+        c1, c2 = st.columns([0.56, 0.6], vertical_alignment="top", width='stretch')
         with c1:
             chart_data = pd.crosstab(filtered['Model'], filtered['Kategori'])
             valid_cols = [c for c in ['iBox', 'Inter', 'Cukai'] if c in chart_data.columns]
@@ -146,11 +146,11 @@ if df is not None:
             st.bar_chart(chart_data[valid_cols] if valid_cols else chart_data, stack=False)
         with c2:
             st.write("Total per Kategori:")
-            st.dataframe(chart_data.T, width='content')
+            st.dataframe(chart_data.T, width='content', height="stretch", row_height=45)
     else:
         st.warning("Kolom 'Kategori' tidak ditemukan dalam data.")
 
-    col_1, col_2 = st.columns([1, 1]) 
+    col_1, col_2 = st.columns([0.75, 0.3]) 
     with col_1:
         st.write('Detail Data')
         st.dataframe(
