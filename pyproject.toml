@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "cuddly-succotash"
+version = "0.1.0"
+description = "Tugas Besar Pemrograman Dasar Sains Data. Dedicated to Angga Setiyadi, M.Kom., CITPM"
+authors = ["Mitho Mizuno <mithomizuno@gmail.com>"]
+license = "Apache-2.0"
+readme = "README.md"
+packages = [{include = "cuddly", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pandas = "^2.2"
+streamlit = "^1.53.1"
+folium = "^0.20.0"
+streamlit-folium = "^0.26.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.2"
+black = "^26.1.0"
+
+[tool.poetry.scripts]
+cuddly = "cuddly.main:run"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
