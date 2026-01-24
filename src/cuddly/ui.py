@@ -146,7 +146,7 @@ if df is not None:
             st.bar_chart(chart_data[valid_cols] if valid_cols else chart_data, stack=False)
         with c2:
             st.write("Total per Kategori:")
-            st.dataframe(chart_data.T, width='content', height="stretch", row_height=45)
+            st.dataframe(chart_data.T, width='stretch', height="stretch", row_height=45)
     else:
         st.warning("Kolom 'Kategori' tidak ditemukan dalam data.")
 
@@ -173,7 +173,7 @@ if df is not None:
                 "count": st.column_config.NumberColumn("Jumlah", format="%d")
             },
             hide_index=True,
-            width='content'
+            width='stretch'
         )
 else:
     st.error("Gagal memuat data. Pastikan file CSV tersedia di folder ./data/")
