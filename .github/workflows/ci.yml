@@ -45,3 +45,23 @@ jobs:
         run: |
           # Running pytest on the tests directory
           poetry run pytest
+          
+  export-requirements:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        
+      - name: Export requirements.txt
+        run: poetry export -f requirements.txt --output requirements.txt --without-hashes
+        
+      - name: Commit and Push
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update requirements.txt for Streamlit Cloud"
+          file_pattern: requirements.txt
