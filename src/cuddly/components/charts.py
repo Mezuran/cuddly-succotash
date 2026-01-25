@@ -240,24 +240,56 @@ def render_variant_breakdown(df):
     
     #4. Filter Interaktif Sederhana (Tabel Mini)
     st.write("#### Cek Harga Spesifik")
+    
+    # Menggunakan 3 kolom: Varian, Kategori, Storage
     cols = st.columns(3)
-    selected_varian = cols[0].selectbox("Pilih Varian", ["Semua"] + sorted(df_chart['Varian'].unique()))
-    selected_cat = cols[1].selectbox("Pilih Kategori", ["Semua"] + sorted(df_chart['Kategori'].unique()))
+    
+    # Pilihan Varian
+    varian_opts = ["Semua"] + sorted(df_chart['Varian'].dropna().unique())
+    selected_varian = cols[0].selectbox("Pilih Varian", varian_opts)
+    
+    # Pilihan Kategori
+    cat_opts = ["Semua"] + sorted(df_chart['Kategori'].dropna().unique())
+    selected_cat = cols[1].selectbox("Pilih Kategori", cat_opts)
+    
+    # Pilihan Storage (Baru)
+    # Cek apakah kolom Storage ada, untuk menghindari error jika pakai data lama
+    if 'Storage' in df_chart.columns:
+        # Mengambil unique value dan membuang yang None/NaN
+        storage_list = df_chart['Storage'].dropna().unique().tolist()
+        # Sort sederhana (String sort). Jika ingin sort 64GB < 128GB < 1TB perlu logic tambahan
+        storage_list.sort() 
+        storage_opts = ["Semua"] + storage_list
+        selected_storage = cols[2].selectbox("Pilih Storage", storage_opts)
+    else:
+        selected_storage = "Semua"
+        cols[2].warning("Kolom 'Storage' tidak ditemukan.")
     
     filtered_view = df_chart
+    
     if selected_varian != "Semua":
         filtered_view = filtered_view[filtered_view['Varian'] == selected_varian]
+        
     if selected_cat != "Semua":
         filtered_view = filtered_view[filtered_view['Kategori'] == selected_cat]
         
-    avg_price = filtered_view['Harga_Int'].mean()
-    min_price = filtered_view['Harga_Int'].min()
-    max_price = filtered_view['Harga_Int'].max()
-    
+    if selected_storage != "Semua" and 'Storage' in df_chart.columns:
+        filtered_view = filtered_view[filtered_view['Storage'] == selected_storage]
+        
+    # --- TAMPILAN METRIK ---
     if not filtered_view.empty:
+        avg_price = filtered_view['Harga_Int'].mean()
+        min_price = filtered_view['Harga_Int'].min()
+        max_price = filtered_view['Harga_Int'].max()
+        
         col_metric = st.columns(3)
-        col_metric[0].metric("Harga Terendah", f"Rp {min_price:,.0f}")
-        col_metric[1].metric("Harga Rata-rata", f"Rp {avg_price:,.0f}")
-        col_metric[2].metric("Harga Tertinggi", f"Rp {max_price:,.0f}")
+        col_metric[0].metric("Harga Terendah (Scam/Butuh Perbaikan?)", f"Rp {min_price:,.0f}")
+        col_metric[1].metric("Harga Rata - Rata (Wajar)", f"Rp {avg_price:,.0f}")
+        col_metric[2].metric("Harga Tertinggi (Overprice?)", f"Rp {max_price:,.0f}")
+        
+        # Opsional: Tampilkan tabel data mentah hasil filter untuk pengecekan user
+        with st.expander("Lihat Data Mentah"):
+            st.dataframe(filtered_view[['Judul', 'Harga', 'Storage', 'Toko', 'Lokasi']], use_container_width=True)
+            
     else:
-        st.info("Tidak ada data untuk kombinasi ini.")
+        st.info(f"Tidak ada data untuk kombinasi: {selected_varian} + {selected_cat} + {selected_storage}")
