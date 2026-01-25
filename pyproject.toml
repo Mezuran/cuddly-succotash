@@ -19,7 +19,8 @@ pytest = "^9.0.2"
 black = "^26.1.0"
 
 [tool.poetry.scripts]
-cuddly = "cuddly.main:run"
+cuddly = "cuddly.app:run"
+cuddlyscrap = "cuddly.scrapping:run"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
