@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import folium
+import altair as alt
 
 from streamlit_folium import st_folium
 from pathlib import Path
@@ -83,6 +84,20 @@ def load_data() -> Optional[pd.DataFrame]:
 
     return df
 
+def analyze_price_fairness(row, stats):
+    cat = row['Kategori']
+    price = row['Harga_Int']
+    
+    if cat in stats:
+        s = stats[cat]
+        if price < s['lower_bound']:
+            return "Terlalu Murah"
+        elif price > s['upper_bound']:
+            return "Terlalu Mahal"
+        else:
+            return "Wajar"
+    return "-"
+
 df = load_data()
 
 st.set_page_config(layout="centered", page_title="PDS: Tugas Besar")
@@ -112,6 +127,44 @@ if df is not None:
         jenis = st.selectbox("Pilih Jenis iPhone", ["iPhone 11", "iPhone 12", "iPhone 13", "iPhone 14", "iPhone 15", "iPhone 16"])
 
     filtered = df[df["Model"].str.contains(jenis, na=False, case=False)]
+
+    price_stats = {}
+    valid_categories = [c for c in ['iBox', 'Inter', 'Cukai'] if c in filtered['Kategori'].unique()]
+    
+    for cat in valid_categories:
+        cat_data = filtered[filtered['Kategori'] == cat]
+        if not cat_data.empty:
+            prices = cat_data['Harga_Int'].dropna()
+            q1 = prices.quantile(0.25)
+            q3 = prices.quantile(0.75)
+            iqr = q3 - q1
+            price_stats[cat] = {
+                'lower_bound': max(0, q1 - 1.5 * iqr),
+                'upper_bound': q3 + 1.5 * iqr
+            }
+
+    # Labeling Data di Tabel
+    if price_stats:
+        filtered['Status Harga'] = filtered.apply(lambda x: analyze_price_fairness(x, price_stats), axis=1)
+    else:
+        filtered['Status Harga'] = "-"
+
+    # --- SECTION CHART HARGA (BOX PLOT) ---
+    st.subheader(f"Rentang Harga Wajar: {jenis}")
+    st.caption("Grafik Box Plot: Kotak menunjukkan rentang harga wajar. Titik-titik di luar garis adalah harga tidak wajar (potensi penipuan/rusak atau kemahalan).")
+
+    # Membuat Chart Box Plot dengan Altair
+    # Boxplot secara otomatis menghitung Q1, Q3, Median, dan Outliers
+    chart_price = alt.Chart(filtered).mark_boxplot(extent=1.5, size=50).encode(
+        x=alt.X('Kategori:N', title=None),
+        y=alt.Y('Harga_Int:Q', title='Harga (Rp)', axis=alt.Axis(format=',.0f')),
+        color=alt.Color('Kategori:N', legend=None),
+        tooltip=['Judul', 'Harga', 'Lokasi', 'platform'] # Tooltip agar titik outlier bisa dicek isinya apa
+    ).properties(
+        height=400
+    ).interactive()
+
+    st.altair_chart(chart_price, use_container_width=True)
 
     st.subheader("Peta Persebaran (GIS)")
     st.caption(f"Menampilkan jumlah listing {jenis} per Provinsi.")
