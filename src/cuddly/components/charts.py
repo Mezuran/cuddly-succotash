@@ -1,6 +1,5 @@
 import streamlit as st
 import altair as alt
-import pandas as pd
 import re
 
 from cuddly.utils import analyze_price_fairness
@@ -21,23 +20,19 @@ def render_chart_wajar(filtered):
                 'upper_bound': q3 + 1.5 * iqr
             }
 
-    # Labeling Data di Tabel
     if price_stats:
         filtered['Status Harga'] = filtered.apply(lambda x: analyze_price_fairness(x, price_stats), axis=1)
     else:
         filtered['Status Harga'] = "-"
 
-    # --- SECTION CHART HARGA (BOX PLOT) ---
     st.subheader(f"Rentang Harga Wajar")
     st.caption("Grafik Box Plot: Kotak menunjukkan rentang harga wajar. Titik-titik di luar garis adalah harga tidak wajar (potensi penipuan/rusak atau kemahalan).")
 
-    # Membuat Chart Box Plot dengan Altair
-    # Boxplot secara otomatis menghitung Q1, Q3, Median, dan Outliers
     chart_price = alt.Chart(filtered).mark_boxplot(extent=1.5, size=50).encode(
         x=alt.X('Kategori:N', title=None),
         y=alt.Y('Harga_Int:Q', title='Harga (Rp)', axis=alt.Axis(format=',.0f')),
         color=alt.Color('Kategori:N', legend=None),
-        tooltip=['Judul', 'Harga', 'Lokasi'] # Tooltip agar titik outlier bisa dicek isinya apa
+        tooltip=['Judul', 'Harga', 'Lokasi']
     ).properties(
         height=400
     ).interactive()
@@ -112,7 +107,6 @@ def render_scam_analysis(df):
         st.warning("Data tidak cukup.")
         return
 
-    # 1. Persiapan Data
     df_chart = df.copy()
     df_chart['Terjual_Count'] = df_chart['Terjual'].apply(clean_terjual)
     
@@ -127,7 +121,6 @@ def render_scam_analysis(df):
     if lower_bound < hard_limit_low:
         lower_bound = hard_limit_low
 
-    # Kategorisasi
     def get_status(price):
         if price < lower_bound: return "Indikasi Scam / Rusak"
         elif price > upper_bound: return "Kemahalan"
@@ -135,19 +128,17 @@ def render_scam_analysis(df):
     
     df_chart['Status'] = df_chart['Harga_Int'].apply(get_status)
 
-    # Menampilkan Info Threshold
     c1, c2, c3 = st.columns(3)
     c1.metric("Batas Bawah (Scam)", f"Rp {lower_bound:,.0f}")
     c2.metric("Harga Rata-rata", f"Rp {mean_price:,.0f}")
     c3.metric("Batas Atas (Mahal)", f"Rp {upper_bound:,.0f}")
 
-    # 2. Visualisasi Scatter Plot
     scatter = alt.Chart(df_chart).mark_circle(size=60).encode(
         x=alt.X('Harga_Int', title='Harga (IDR)', scale=alt.Scale(zero=False)),
         y=alt.Y('Terjual_Count', title='Jumlah Terjual (Unit)'),
         color=alt.Color('Status', scale=alt.Scale(
             domain=['Indikasi Scam / Rusak', 'Harga Wajar', 'Kemahalan'],
-            range=['#D32F2F', '#388E3C', '#FBC02D']  # Merah, Hijau, Kuning
+            range=['#D32F2F', '#388E3C', '#FBC02D']
         )),
         tooltip=[
             alt.Tooltip('Judul', title='Judul Barang'),
@@ -170,9 +161,6 @@ def render_scam_analysis(df):
     """)
 
 def extract_variant(title):
-    """
-    Ekstrak varian model dari judul (Pro Max, Pro, Plus, atau Basic).
-    """
     title_lower = str(title).lower()
     
     if "pro max" in title_lower:
@@ -192,23 +180,16 @@ def render_variant_breakdown(df):
         st.warning("Data kosong.")
         return
 
-    # 1. Proses Data: Tambah kolom Varian
-    # Kita menggunakan .copy() agar tidak merusak dataframe asli di cache
     df_chart = df.copy()
     df_chart['Varian'] = df_chart['Judul'].apply(extract_variant)
 
-    # Urutan logis untuk chart
     varian_order = ["Pro Max", "Pro", "Plus", "Regular"]
-    
-    # 2. Chart Heatmap / Grouped Bar untuk Harga
-    # Menampilkan Harga Rata-rata per Varian & Kategori
     
     base = alt.Chart(df_chart).encode(
         x=alt.X('Varian', sort=varian_order, axis=alt.Axis(title="Model Varian", labelAngle=0)),
         y=alt.Y('mean(Harga_Int):Q', title='Rata-rata Harga (IDR)', axis=alt.Axis(format=',.0f'))
     )
 
-    # Chart Batang Berkelompok (Grouped Bar)
     chart = base.mark_bar().encode(
         x=alt.X('Varian', sort=varian_order, axis=None),
         color=alt.Color('Kategori', scale=alt.Scale(scheme='tableau10')),
@@ -227,7 +208,6 @@ def render_variant_breakdown(df):
 
     st.altair_chart(chart)
 
-    # 3. Chart Distribusi Stok (Opsional, untuk melengkapi)
     st.caption("Proporsi Stok di Pasar")
     stock_chart = alt.Chart(df_chart).mark_bar().encode(
         y=alt.Y('Varian', sort=varian_order, title=None),
@@ -238,26 +218,19 @@ def render_variant_breakdown(df):
     
     st.altair_chart(stock_chart, use_container_width=True)
     
-    #4. Filter Interaktif Sederhana (Tabel Mini)
     st.write("#### Cek Harga Spesifik")
     
-    # Menggunakan 3 kolom: Varian, Kategori, Storage
     cols = st.columns(3)
     
     # Pilihan Varian
     varian_opts = ["Semua"] + sorted(df_chart['Varian'].dropna().unique())
     selected_varian = cols[0].selectbox("Pilih Varian", varian_opts)
     
-    # Pilihan Kategori
     cat_opts = ["Semua"] + sorted(df_chart['Kategori'].dropna().unique())
     selected_cat = cols[1].selectbox("Pilih Kategori", cat_opts)
     
-    # Pilihan Storage (Baru)
-    # Cek apakah kolom Storage ada, untuk menghindari error jika pakai data lama
     if 'Storage' in df_chart.columns:
-        # Mengambil unique value dan membuang yang None/NaN
         storage_list = df_chart['Storage'].dropna().unique().tolist()
-        # Sort sederhana (String sort). Jika ingin sort 64GB < 128GB < 1TB perlu logic tambahan
         storage_list.sort() 
         storage_opts = ["Semua"] + storage_list
         selected_storage = cols[2].selectbox("Pilih Storage", storage_opts)
@@ -276,7 +249,6 @@ def render_variant_breakdown(df):
     if selected_storage != "Semua" and 'Storage' in df_chart.columns:
         filtered_view = filtered_view[filtered_view['Storage'] == selected_storage]
         
-    # --- TAMPILAN METRIK ---
     if not filtered_view.empty:
         avg_price = filtered_view['Harga_Int'].mean()
         min_price = filtered_view['Harga_Int'].min()
@@ -287,7 +259,6 @@ def render_variant_breakdown(df):
         col_metric[1].metric("Harga Rata - Rata (Wajar)", f"Rp {avg_price:,.0f}")
         col_metric[2].metric("Harga Tertinggi (Overprice?)", f"Rp {max_price:,.0f}")
         
-        # Opsional: Tampilkan tabel data mentah hasil filter untuk pengecekan user
         with st.expander("Lihat Data Mentah"):
             st.dataframe(filtered_view[['Judul', 'Harga', 'Storage', 'Toko', 'Lokasi']], use_container_width=True)
             
