@@ -38,14 +38,14 @@ def get_province(city_name):
 def load_data() -> Optional[pd.DataFrame]:
     result = []
 
-    file_path = Path(f"iphone_tokopedia_cleaned.csv")
+    file_path = Path(f"iphone_tokopedia_cleaned.json")
     if not file_path.exists():
-        file_path = Path(f"./data/iphone_tokopedia_cleaned.csv")
+        file_path = Path(f"./data/iphone_tokopedia_cleaned.json")
 
     if not file_path.exists():
         return None
 
-    df = pd.read_csv(file_path)
+    df = pd.read_json(file_path)
     result.append(df)
 
     if not result:
