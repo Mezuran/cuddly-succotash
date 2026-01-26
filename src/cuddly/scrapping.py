@@ -26,6 +26,6 @@ def run():
     print(f"Jumlah baris awal: {len(df)}")
     print(f"Jumlah baris setelah dibersihkan: {len(df_clean)}")
 
-    df_clean.to_json('./data/iphone_tokopedia_cleaned.json', index=False)
+    df_clean.to_json('./data/iphone_tokopedia_cleaned.json', index=False, indent=4)
 
     print(df_clean[['Model', 'Judul_Cleaned', 'Storage']].head())
