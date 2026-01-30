@@ -1,7 +1,7 @@
 import streamlit as st
 import altair as alt
 
-from cuddly.utils import load_data, analyze_price_fairness
+from cuddly.utils import load_data
 from cuddly.components import maps, charts, tables
 
 st.set_page_config(layout="centered", page_title="PDS: Analisis Harga iPhone")
