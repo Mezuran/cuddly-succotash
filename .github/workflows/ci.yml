@@ -67,7 +67,7 @@ jobs:
            poetry export -f requirements.txt --without-hashes >> requirements.txt
     
       - name: Commit and Push
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore: update requirements.txt for Streamlit Cloud"
           file_pattern: requirements.txt
