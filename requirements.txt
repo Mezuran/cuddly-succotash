@@ -1,3 +1,4 @@
+-e .
 altair==6.0.0 ; python_version >= "3.12" and python_version < "4.0"
 async-generator==1.10 ; python_version >= "3.12" and python_version < "4.0"
 attrs==25.4.0 ; python_version >= "3.12" and python_version < "4.0"
