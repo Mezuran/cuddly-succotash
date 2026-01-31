@@ -62,8 +62,10 @@ jobs:
           plugins: poetry-plugin-export
         
       - name: Export requirements.txt
-        run: poetry export -f requirements.txt --output requirements.txt --without-hashes
-        
+        run: |
+           echo "-e ." > requirements.txt
+           poetry export -f requirements.txt --without-hashes >> requirements.txt
+    
       - name: Commit and Push
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
